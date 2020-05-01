@@ -167,6 +167,39 @@ class StudentExerciseReports():
                 if exercise.language == 'HTML':
                     print(f'HTML exercise {exercise}')               
                  
+    def exercises_and_students(self):
+        with sqlite3.connect(self.db_path) as conn:
+            db_cursor = conn.cursor()
+            exercises = dict()
+            db_cursor.execute("""
+                SELECT
+                    e.Id ExerciseId,
+                    e.Name,
+                    s.Id StudentId,
+                    s.FirstName,
+                    s.LastName
+                FROM Exercise e
+                JOIN StudentExercise se on se.ExerciseId = e.Id
+                JOIN Student s on s.Id = se.StudentId              
+            """)
+            
+            dataset = db_cursor.fetchall()
+            
+            for row in dataset:
+                exercise_id = row[0]
+                exercise_name = row[1]
+                student_id = row[2]
+                student_name = f'{row[3]} {row[4]}'
+                
+                if exercise_name not in exercises:
+                    exercises[exercise_name] = [student_name]
+                else:
+                    exercises[exercise_name].append(student_name)
+                    
+            for exercise_name, students in exercises.items():
+                print(exercise_name)
+                for student in students:
+                    print(f'\t* {student}')
      
         
 reports = StudentExerciseReports()
@@ -178,4 +211,5 @@ reports.all_javascript()
 reports.all_python()
 reports.all_sql()
 reports.all_html()
+reports.exercises_and_students()
                 
