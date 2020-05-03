@@ -200,6 +200,41 @@ class StudentExerciseReports():
                 print(exercise_name)
                 for student in students:
                     print(f'\t* {student}')
+                    
+    def student_exercise(self):
+        students = dict()
+
+        with sqlite3.connect(self.db_path) as conn:
+            db_cursor = conn.cursor()
+
+            db_cursor.execute("""      
+            SELECT
+                s.Id,
+	            s.FirstName,
+	            s.LastName,
+	            e.Id,
+	            e.Name
+            FROM Exercise e
+            JOIN StudentExercise se on se.ExerciseId = e.Id
+            JOIN Student s on s.Id = se.StudentId""")
+
+            data = db_cursor.fetchall()
+
+            for row in data:
+                student_id = row[0]
+                student_name = f'{row[1]} {row[2]}'
+                exercise_id = row[3]
+                exercise_name = row[4]
+
+                if student_name not in students:
+                    students[student_name] = [exercise_name]
+                else:
+                    students[student_name].append(exercise_name)
+
+            for student_name, exercises in students.items():
+                print(f'{student_name} is working on:')
+                for exercise in exercises:
+                    print(f'\t* {exercise}')
      
         
 reports = StudentExerciseReports()
@@ -212,4 +247,6 @@ reports.all_python()
 reports.all_sql()
 reports.all_html()
 reports.exercises_and_students()
+reports.student_exercise()
+
                 
